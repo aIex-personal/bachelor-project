@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+dist/
+build/
+out/
+.env
+.env.*
+*.log
+*.sqlite
+*.db
+__pycache__/
+.venv/
+venv/

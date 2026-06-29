@@ -1,0 +1,114 @@
+##
+## docker-compose.test.yml — Automated test environment for HapticStudio
+##
+## Services
+##   pocketbase   — ephemeral test database (no volume, wiped between runs)
+##   sveltekit    — Vite dev server used as the test target for E2E
+##   unit-tests   — Vitest unit test runner (no network dependency)
+##   e2e-tests    — Playwright E2E runner (depends on sveltekit + pocketbase)
+##
+## Usage
+##   # Run unit tests only (fast, no PocketBase needed):
+##   docker compose -f docker-compose.test.yml run --rm unit-tests
+##
+##   # Run E2E tests (starts all backend services automatically):
+##   docker compose -f docker-compose.test.yml run --rm e2e-tests
+##
+##   # Run both suites in one shot:
+##   docker compose -f docker-compose.test.yml run --rm unit-tests && \
+##   docker compose -f docker-compose.test.yml run --rm e2e-tests
+##
+##   # Tear everything down afterwards:
+##   docker compose -f docker-compose.test.yml down --remove-orphans
+##
+
+services:
+
+  # ── Ephemeral PocketBase ─────────────────────────────────────────────────────
+  pocketbase:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    restart: "no"
+    # No port mapping — only reachable within the test network
+    expose:
+      - "8090"
+    # No named volume: every run starts with a clean database
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # ── SvelteKit dev server (E2E target) ────────────────────────────────────────
+  sveltekit:
+    image: node:22-alpine
+    working_dir: /app
+    restart: "no"
+    expose:
+      - "5173"
+    volumes:
+      - ./project:/app
+      - sveltekit_nm:/app/node_modules
+    environment:
+      # Vite dev server injects this into client-side JS at request time
+      PUBLIC_POCKETBASE_URL: http://pocketbase:8090
+      # Server-side (SSR/api routes) PocketBase URL
+      POCKETBASE_URL: http://pocketbase:8090
+    command: >
+      sh -c "npm install --prefer-offline && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 60s
+
+  # ── Unit tests (Vitest) ──────────────────────────────────────────────────────
+  # Runs pure JS/Svelte unit tests — no network required.
+  unit-tests:
+    image: node:22-alpine
+    working_dir: /app
+    restart: "no"
+    volumes:
+      - ./project:/app
+      - unit_nm:/app/node_modules
+    command: >
+      sh -c "npm install --prefer-offline && npm test"
+
+  # ── E2E tests (Playwright) ───────────────────────────────────────────────────
+  # Uses the official Microsoft Playwright image which has Chromium pre-installed.
+  # Runs against the sveltekit service on the internal Docker network.
+  e2e-tests:
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
+    working_dir: /app
+    restart: "no"
+    volumes:
+      - ./project:/app
+      - e2e_nm:/app/node_modules
+      # Persist Playwright report so it can be inspected after the run
+      - ./playwright-report:/app/playwright-report
+    environment:
+      # Base URL for Playwright — points at the sveltekit service
+      TEST_BASE_URL: http://sveltekit:5173
+      # The browser's fetch calls also resolve via internal Docker DNS
+      PUBLIC_POCKETBASE_URL: http://pocketbase:8090
+      CI: "true"
+      # Tell Playwright where browsers are pre-installed in this image
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    command: >
+      sh -c "npm install --prefer-offline && npm run test:e2e"
+    depends_on:
+      sveltekit:
+        condition: service_healthy
+      pocketbase:
+        condition: service_healthy
+
+volumes:
+  sveltekit_nm:
+  unit_nm:
+  e2e_nm:

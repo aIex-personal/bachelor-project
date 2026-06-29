@@ -1,0 +1,51 @@
+{
+	"name": "project",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"build:electron": "cross-env BUILD_TARGET=electron vite build",
+		"build:electron:prod": "cross-env BUILD_TARGET=electron PUBLIC_POCKETBASE_URL=https://api.hamso.dk vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"lint": "prettier --check .",
+		"format": "prettier --write .",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:assessment": "node ../scripts/generate_test_coverage_assessment.mjs",
+		"test:assessment:full": "node ../scripts/generate_test_coverage_assessment.mjs --with-e2e",
+		"test:cases": "node ../scripts/generate_existing_test_cases.mjs",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:headed": "playwright test --headed"
+	},
+	"devDependencies": {
+		"@fontsource/fira-mono": "^5.2.7",
+		"@neoconfetti/svelte": "^2.2.2",
+		"@playwright/test": "^1.59.1",
+		"@sveltejs/adapter-node": "^5.5.4",
+		"@sveltejs/adapter-static": "^3.0.10",
+		"@sveltejs/kit": "^2.57.0",
+		"@sveltejs/vite-plugin-svelte": "^7.0.0",
+		"@tailwindcss/vite": "^4.2.2",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/svelte": "^5.3.1",
+		"@vitest/coverage-v8": "^4.1.4",
+		"cross-env": "^7.0.3",
+		"jsdom": "^29.0.2",
+		"prettier": "^3.8.1",
+		"prettier-plugin-svelte": "^3.5.1",
+		"prettier-plugin-tailwindcss": "^0.7.2",
+		"svelte": "^5.55.2",
+		"tailwindcss": "^4.2.2",
+		"vite": "^8.0.7",
+		"vitest": "^4.1.4"
+	},
+	"dependencies": {
+		"daisyui": "^5.5.19",
+		"pocketbase": "^0.26.8"
+	}
+}

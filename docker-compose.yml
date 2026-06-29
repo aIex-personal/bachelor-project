@@ -1,0 +1,40 @@
+services:
+
+  pocketbase:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8090"
+    volumes:
+      # Persist the database across rebuilds
+      - pb_data:/pb/pb_data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sveltekit:
+    build:
+      context: ./project
+      dockerfile: Dockerfile
+      args:
+        - PUBLIC_POCKETBASE_URL=http://68.183.79.68:8080
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    environment:
+      # Public URL used by the browser to reach PocketBase
+      - PUBLIC_POCKETBASE_URL=http://68.183.79.68:8080
+      # Internal Docker network URL used by SSR/server-side code
+      - POCKETBASE_URL=http://pocketbase:8090
+      # Required by adapter-node for CSRF origin checks
+      - ORIGIN=http://68.183.79.68
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+
+volumes:
+  pb_data:

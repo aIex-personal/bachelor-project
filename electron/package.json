@@ -1,0 +1,74 @@
+{
+	"name": "hapticstudio-desktop",
+	"version": "1.0.0",
+	"description": "HapticStudio — Haptic Pattern Designer Desktop Application",
+	"main": "main.js",
+	"private": true,
+	"scripts": {
+		"start:dev": "ELECTRON_DEV=1 electron .",
+		"start:dev:win": "set ELECTRON_DEV=1 && electron .",
+		"build:sveltekit": "cd ../project && npm run build:electron:prod",
+		"dist": "npm run build:sveltekit && electron-builder",
+		"dist:mac": "npm run build:sveltekit && electron-builder --mac",
+		"dist:mac:arm64": "npm run build:sveltekit && electron-builder --mac --arm64",
+		"dist:mac:x64": "npm run build:sveltekit && electron-builder --mac --x64",
+		"dist:win": "npm run build:sveltekit && electron-builder --win",
+		"dist:both": "npm run build:sveltekit && electron-builder --mac --win"
+	},
+	"devDependencies": {
+		"electron": "^33.3.1",
+		"electron-builder": "^25.1.8"
+	},
+	"build": {
+		"appId": "com.hapticstudio.desktop",
+		"productName": "HapticStudio",
+		"copyright": "Copyright © 2025 HapticStudio",
+		"directories": {
+			"output": "dist"
+		},
+		"files": [
+			"main.js",
+			"preload.js",
+			"package.json"
+		],
+		"extraResources": [
+			{
+				"from": "../project/build",
+				"to": "app",
+				"filter": ["**/*"]
+			}
+		],
+		"mac": {
+			"target": [
+				{
+					"target": "dmg"
+				}
+			],
+			"category": "public.app-category.music",
+			"identity": null
+		},
+		"dmg": {
+			"format": "ULFO",
+			"writeUpdateInfo": false
+		},
+		"win": {
+			"target": [
+				{
+					"target": "nsis",
+					"arch": ["x64"]
+				}
+			],
+			"signingHashAlgorithms": null
+		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true,
+			"installerIcon": null,
+			"uninstallerIcon": null
+		},
+		"linux": {
+			"target": ["AppImage"],
+			"category": "Audio"
+		}
+	}
+}

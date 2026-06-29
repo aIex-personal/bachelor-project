@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: night --default;
+}
+
+/* ── Global custom overrides ─────────────────────────────────── */
+:root {
+  --timeline-track-h: 72px;
+  --timeline-header-w: 180px;
+  --timeline-ruler-h: 32px;
+  --sound-block-radius: 6px;
+  --panel-bg: oklch(16% 0.02 260);
+  --track-bg: oklch(13% 0.015 260);
+  --track-alt-bg: oklch(14.5% 0.015 260);
+  --block-sine: oklch(55% 0.2 220);
+  --block-triangle: oklch(55% 0.2 140);
+  --block-square: oklch(60% 0.2 60);
+  --block-sawtooth: oklch(55% 0.2 30);
+  --filter-color: oklch(55% 0.25 310);
+}
+
+/* Scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(35% 0.05 260) transparent;
+}
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: oklch(35% 0.05 260); border-radius: 3px; }
+
+html, body {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* ── Waveform colours for type tags ─────────────────────────── */
+.wave-sine    { @apply text-sky-400; }
+.wave-triangle { @apply text-emerald-400; }
+.wave-square  { @apply text-yellow-400; }
+.wave-sawtooth { @apply text-orange-400; }
+
+/* Sound block styles per type */
+.block-sine      { background: color-mix(in oklch, var(--block-sine) 30%, transparent); border-color: var(--block-sine); }
+.block-triangle  { background: color-mix(in oklch, var(--block-triangle) 30%, transparent); border-color: var(--block-triangle); }
+.block-square    { background: color-mix(in oklch, var(--block-square) 30%, transparent); border-color: var(--block-square); }
+.block-sawtooth  { background: color-mix(in oklch, var(--block-sawtooth) 30%, transparent); border-color: var(--block-sawtooth); }
+
+.block-selected { @apply ring-2 ring-white/50; }
+.block-muted    { opacity: 0.4; }
+
+/* Filter overlay on track */
+.filter-overlay {
+  background: color-mix(in oklch, var(--filter-color) 15%, transparent);
+  border-top: 1px solid color-mix(in oklch, var(--filter-color) 60%, transparent);
+}
+
+/* ── Utility helpers ─────────────────────────────────────────── */
+.panel {
+  background: var(--panel-bg);
+  @apply border border-white/5;
+}
+
+.knob-wrapper {
+  touch-action: none;
+  user-select: none;
+}
+
+/* Animate playback cursor */
+.playback-cursor {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: oklch(70% 0.25 50);
+  pointer-events: none;
+  z-index: 50;
+  mix-blend-mode: screen;
+}
+
+/* Icon button reset */
+.icon-btn {
+  @apply btn btn-ghost btn-sm btn-square;
+}
+
+/* Transition for collapsible panels */
+.slide-fade {
+  transition: all 0.2s ease;
+}
+
+/* Editor tab active */
+.editor-tab-active {
+  @apply border-b-2 border-primary text-primary;
+}
+
+/* Preset card hover */
+.preset-card {
+  @apply card bg-base-200 border border-white/5 cursor-pointer transition-all duration-150;
+}
+.preset-card:hover {
+  @apply border-primary/50 bg-base-100;
+}
+
+/* Range input custom */
+input[type="range"] {
+  accent-color: oklch(var(--p));
+}
+
+/* Alert/toast positioning */
+.toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
